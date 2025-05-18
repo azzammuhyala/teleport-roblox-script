@@ -116,10 +116,10 @@ navbarFrameLayout.FillDirection = Enum.FillDirection.Horizontal
 navbarFrameLayout.HorizontalFlex = Enum.UIFlexAlignment.Fill
 navbarFrameLayout.Parent = navbarFrame
 
-local scrollingFrameLayout = Instance.new("UIListLayout")
-scrollingFrameLayout.SortOrder = Enum.SortOrder.LayoutOrder
-scrollingFrameLayout.Padding = UDim.new(0, 5)
-scrollingFrameLayout.Parent = listPlayersScrollingFrame
+local listPlayersScrollingFrameLayout = Instance.new("UIListLayout")
+listPlayersScrollingFrameLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listPlayersScrollingFrameLayout.Padding = UDim.new(0, 5)
+listPlayersScrollingFrameLayout.Parent = listPlayersScrollingFrame
 
 local function matchPlayer(displayName, username)
     local lowerDisplayName = string.lower(displayName)
@@ -140,7 +140,13 @@ local function updatePlayers()
         end
     end
 
-    for _, plr in pairs(players:GetPlayers()) do
+    local listPlayers = players:GetPlayers()
+
+    table.sort(listPlayers, function(a, b)
+        return a.DisplayName < b.DisplayName
+    end)
+
+    for _, plr in pairs(listPlayers) do
 
         local displayName = plr.DisplayName
         local username = plr.Name
