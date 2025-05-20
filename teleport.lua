@@ -1,11 +1,17 @@
 -- Teleport Script By Azzam Muhyala
--- Day 4 bikin script sendiri :v
+-- Day 5 bikin script sendiri :v
 
 if ZAM_SCRIPT_TELEPORT_LOADED then
     return
 end
 
+local dragging = false
+local dragInput = nil
+local dragStart = nil
+local startPosition = nil
+
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 
@@ -56,8 +62,6 @@ mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 mainFrame.Size = UDim2.new(0.25, 0, 0.5, 0)
 mainFrame.BackgroundTransparency = 1
-mainFrame.Active = true
-mainFrame.Draggable = true
 mainFrame.Parent = ScreenGui
 
 local headerFrame = Instance.new("Frame")
@@ -65,6 +69,7 @@ headerFrame.Name = "HeaderFrame"
 headerFrame.Size = UDim2.new(1, 0, 0.15, 0)
 headerFrame.BackgroundTransparency = 1
 headerFrame.LayoutOrder = 1
+headerFrame.Active = true
 headerFrame.Parent = mainFrame
 
 local navbarFrame = Instance.new("Frame")
@@ -81,7 +86,7 @@ listPlayersScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 listPlayersScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 listPlayersScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
 listPlayersScrollingFrame.BackgroundColor3 = Color3.fromRGB(53, 53, 53)
-listPlayersScrollingFrame.ScrollBarThickness = 0
+listPlayersScrollingFrame.ScrollBarThickness = 5
 listPlayersScrollingFrame.LayoutOrder = 3
 listPlayersScrollingFrame.Parent = mainFrame
 
@@ -137,6 +142,11 @@ cancelSearchButton.Image = "rbxassetid://92186614586776"
 cancelSearchButton.BackgroundColor3 = Color3.fromRGB(84, 84, 84)
 cancelSearchButton.LayoutOrder = 2
 cancelSearchButton.Parent = navbarFrame
+
+local listPlayersScrollingFramePadding = Instance.new("UIPadding")
+listPlayersScrollingFramePadding.PaddingRight = UDim.new(0, 5)
+listPlayersScrollingFramePadding.PaddingLeft = UDim.new(0, 5)
+listPlayersScrollingFramePadding.Parent = listPlayersScrollingFrame
 
 local mainFrameLayout = Instance.new("UIListLayout")
 mainFrameLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -203,7 +213,7 @@ local function updatePlayers()
         if player ~= LocalPlayer and matchPlayer(displayName, username) then
             local button = Instance.new("TextButton")
 
-            button.Size = UDim2.new(1, 0, 0.2, 0)
+            button.Size = UDim2.new(1, 0, 0.15, 0)
             button.TextColor3 = Color3.fromRGB(255, 255, 255)
             button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
             button.Font = Enum.Font.SourceSans
@@ -234,6 +244,42 @@ updatePlayers()
 
 local playerAdded = Players.PlayerAdded:Connect(updatePlayers)
 local playerRemoved = Players.PlayerRemoving:Connect(updatePlayers)
+
+headerFrame.InputBegan:Connect(function(input)
+    if
+        input.UserInputType == Enum.UserInputType.MouseButton1 or
+        input.UserInputType == Enum.UserInputType.Touch
+    then
+        dragging = true
+        dragStart = input.Position
+        startPosition = mainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+headerFrame.InputChanged:Connect(function(input)
+    if
+        input.UserInputType == Enum.UserInputType.MouseMovement or
+        input.UserInputType == Enum.UserInputType.Touch
+    then
+        dragInput = input
+    end
+end)
+
+local updateUIPosition = UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(
+            startPosition.X.Scale, startPosition.X.Offset + delta.X,
+            startPosition.Y.Scale, startPosition.Y.Offset + delta.Y
+        )
+    end
+end)
 
 searchBar.Changed:Connect(function(property)
     if property == "Text" then
@@ -305,14 +351,12 @@ local filterPosition = RunService.RenderStepped:Connect(function()
 end)
 
 minimizeButton.Activated:Connect(function()
-    if mainFrame.Active then
-        mainFrame.Active = false
+    if navbarFrame.Visible then
         navbarFrame.Visible = false
         listPlayersScrollingFrame.Visible = false
 
         titleLabel.BackgroundTransparency = 0.5
     else
-        mainFrame.Active = true
         navbarFrame.Visible = true
         listPlayersScrollingFrame.Visible = true
 
@@ -324,6 +368,7 @@ closeButton.Activated:Connect(function()
     ScreenGui:Destroy()
     playerAdded:Disconnect()
     playerRemoved:Disconnect()
+    updateUIPosition:Disconnect()
     enableTool:Disconnect()
     updateBallPosition:Disconnect()
     filterPosition:Disconnect()
