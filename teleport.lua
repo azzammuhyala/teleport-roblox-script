@@ -11,9 +11,7 @@ pcall(function() getgenv().ZAM_SCRIPT_TELEPORT_LOADED = true end)
 
 -- untuk dragging frame teleport to players
 local dragging = false
-local dragInput = nil
-local dragStart = nil
-local startPosition = nil
+local dragInput, dragStart, startPosition
 
 -- layanan
 local RunService = game:GetService("RunService")
@@ -33,21 +31,22 @@ task.wait(1)
 
 -- notifikasi bahwa skrip mulai dimuat dan layanan siap dipakai
 StarterGui:SetCore("SendNotification", {
+    Icon = "rbxassetid://12941020168",
     Title = "Teleport Script",
     Text = "Made By Azzam Muhyala",
     Duration = 5
 })
 
 -- balok indikator untuk click to teleport
-local ballPartIndicator = Instance.new("Part")
-ballPartIndicator.Name = "ZamScriptTeleportBallIndicator"
-ballPartIndicator.Shape = Enum.PartType.Ball
-ballPartIndicator.Size = Vector3.new(1, 1, 1)
-ballPartIndicator.Color = Color3.fromRGB(255, 0, 0)
-ballPartIndicator.Material = Enum.Material.Neon
-ballPartIndicator.Anchored = true
-ballPartIndicator.CanCollide = false
-ballPartIndicator.CanTouch = false
+local partIndicator = Instance.new("Part")
+partIndicator.Name = "ZamScriptTeleportPartIndicator"
+partIndicator.Shape = Enum.PartType.Ball
+partIndicator.Material = Enum.Material.Neon
+partIndicator.Size = Vector3.new(1, 1, 1)
+partIndicator.Color = Color3.fromRGB(255, 0, 0)
+partIndicator.Anchored = true
+partIndicator.CanCollide = false
+partIndicator.CanTouch = false
 
 -- alat untuk click to teleport
 local clickToTeleportTool = Instance.new("Tool")
@@ -67,7 +66,7 @@ local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-mainFrame.Size = UDim2.new(0.25, 0, 0.5, 0)
+mainFrame.Size = UDim2.new(0.1, 100, 0.1, 200)
 mainFrame.BackgroundTransparency = 1
 mainFrame.Parent = ScreenGui
 
@@ -96,14 +95,14 @@ listPlayersScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 listPlayersScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 listPlayersScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
 listPlayersScrollingFrame.BackgroundColor3 = Color3.fromRGB(53, 53, 53)
-listPlayersScrollingFrame.ScrollBarThickness = 5
+listPlayersScrollingFrame.ScrollBarThickness = 4
 listPlayersScrollingFrame.LayoutOrder = 3
 listPlayersScrollingFrame.Parent = mainFrame
 
 -- title
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
-titleLabel.Size = UDim2.new(1, 0, 1, 0)
+titleLabel.Size = UDim2.new(0.8, 0, 1, 0)
 titleLabel.BackgroundColor3 = Color3.fromRGB(84, 84, 84)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Font = Enum.Font.SourceSans
@@ -158,11 +157,27 @@ cancelSearchButton.BackgroundColor3 = Color3.fromRGB(84, 84, 84)
 cancelSearchButton.LayoutOrder = 2
 cancelSearchButton.Parent = navbarFrame
 
--- padding untuk list pemain kanan dan kiri sebanyak 5 pixel
-local listPlayersScrollingFramePadding = Instance.new("UIPadding")
-listPlayersScrollingFramePadding.PaddingRight = UDim.new(0, 5)
-listPlayersScrollingFramePadding.PaddingLeft = UDim.new(0, 5)
-listPlayersScrollingFramePadding.Parent = listPlayersScrollingFrame
+-- tombol teleport ke pemain
+local tpPlayerButton = Instance.new("TextButton")
+tpPlayerButton.Name = "TeleportPlayer"
+tpPlayerButton.Size = UDim2.new(1, 0, 0.15, 0)
+tpPlayerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpPlayerButton.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+tpPlayerButton.Font = Enum.Font.SourceSans
+tpPlayerButton.TextScaled = true
+tpPlayerButton.TextWrapped = true
+
+-- padding
+local universalPadding = Instance.new("UIPadding")
+universalPadding.PaddingRight = UDim.new(0, 2)
+universalPadding.PaddingLeft = UDim.new(0, 2)
+universalPadding.PaddingTop = UDim.new(0, 2)
+universalPadding.PaddingBottom = UDim.new(0, 2)
+
+universalPadding:Clone().Parent = titleLabel
+universalPadding:Clone().Parent = searchBar
+universalPadding:Clone().Parent = listPlayersScrollingFrame
+universalPadding:Clone().Parent = tpPlayerButton
 
 -- layout
 local mainFrameLayout = Instance.new("UIListLayout")
@@ -188,11 +203,8 @@ listPlayersScrollingFrameLayout.Padding = UDim.new(0, 5)
 listPlayersScrollingFrameLayout.Parent = listPlayersScrollingFrame
 
 -- pengecekan apakah RaycastFilterType.Exclude ada dalam suatu permainan
-local success, _ = pcall(function()
-    return Enum.RaycastFilterType.Exclude
-end)
-
 local RaycaseFilterTypeExclude
+local success, _ = pcall(function() return Enum.RaycastFilterType.Exclude end)
 
 if success then
     -- jika iya maka pakai Enum.RaycastFilterType.Exclude
@@ -217,7 +229,7 @@ end
 local function updatePlayers()
     -- hapus semua tombol di dalam list
     for _, child in ipairs(listPlayersScrollingFrame:GetChildren()) do
-        if child:IsA("TextButton") then
+        if child:IsA("TextButton") and child.Name == "TeleportPlayer" then
             child:Destroy()
         end
     end
@@ -226,9 +238,7 @@ local function updatePlayers()
     local listPlayers = Players:GetPlayers()
 
     -- urutkan berdasarkan urutan ASCII (atau abjad) dari nama display pemain
-    table.sort(listPlayers, function(a, b)
-        return a.DisplayName < b.DisplayName
-    end)
+    table.sort(listPlayers, function(a, b) return a.DisplayName < b.DisplayName end)
 
     for _, player in pairs(listPlayers) do
         local displayName = player.DisplayName
@@ -236,15 +246,9 @@ local function updatePlayers()
 
         -- mengecualikan pemain utama (LokalPlayer) dan mefilter pemain dari teks pencarian
         if player ~= LocalPlayer and matchPlayer(displayName, username) then
-            local button = Instance.new("TextButton")
+            local button = tpPlayerButton:Clone()
 
-            button.Size = UDim2.new(1, 0, 0.15, 0)
-            button.TextColor3 = Color3.fromRGB(255, 255, 255)
-            button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-            button.Font = Enum.Font.SourceSans
-            button.Text = displayName .. " (" .. username .. ")"
-            button.TextScaled = true
-            button.TextWrapped = true
+            button.Text = displayName .. " (@" .. username .. ")"
             button.Parent = listPlayersScrollingFrame
 
             -- fungsi aksi ketika tombol di tekan maka teleport ke pemain target
@@ -268,9 +272,7 @@ local function updatePlayers()
 end
 
 -- taruh tool click to teleport ke backpack pemain (jaga-jaga jika backpack belum ada atau belum siap menggunakan pcall)
-pcall(function()
-    clickToTeleportTool.Parent = LocalPlayer.Backpack
-end)
+pcall(function() clickToTeleportTool.Parent = LocalPlayer.Backpack end)
 -- update pemain saat pertama execute
 updatePlayers()
 
@@ -329,12 +331,12 @@ end)
 
 -- saat tool diaktifkan maka taruh part indikator ke workspace
 clickToTeleportTool.Equipped:Connect(function()
-    ballPartIndicator.Parent = workspace
+    partIndicator.Parent = workspace
 end)
 
 -- saat tool di nonaktifkan maka hapus part indikator dari workspace
 clickToTeleportTool.Unequipped:Connect(function()
-    ballPartIndicator.Parent = nil
+    partIndicator.Parent = nil
 end)
 
 -- saat tool di tekan
@@ -345,7 +347,7 @@ clickToTeleportTool.Activated:Connect(function()
 
     local rayParams = RaycastParams.new()
     rayParams.FilterType = RaycaseFilterTypeExclude
-    rayParams.FilterDescendantsInstances = {ballPartIndicator}
+    rayParams.FilterDescendantsInstances = {partIndicator}
 
     local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000, rayParams)
     local character = LocalPlayer.Character
@@ -361,8 +363,8 @@ end)
 
 -- update posisi part indikator tiap gerakan mouse
 local updateBallPosition = Mouse.Move:Connect(function()
-    if ballPartIndicator.Parent then
-        ballPartIndicator.Position = Mouse.Hit.Position
+    if partIndicator.Parent then
+        partIndicator.Position = Mouse.Hit.Position
     end
 end)
 
@@ -378,18 +380,18 @@ end)
 
 -- filter posisi yaitu part indikator
 local filterPosition = RunService.RenderStepped:Connect(function()
-    if ballPartIndicator.Parent then
+    if partIndicator.Parent then
         local camera = workspace.CurrentCamera
         local unitRay = camera:ScreenPointToRay(Mouse.X, Mouse.Y)
 
         local rayParams = RaycastParams.new()
         rayParams.FilterType = RaycaseFilterTypeExclude
-        rayParams.FilterDescendantsInstances = {ballPartIndicator}
+        rayParams.FilterDescendantsInstances = {partIndicator}
 
         local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000, rayParams)
 
         if result then
-            ballPartIndicator.Position = result.Position
+            partIndicator.Position = result.Position
         end
     end
 end)
@@ -400,7 +402,7 @@ minimizeButton.Activated:Connect(function()
         navbarFrame.Visible = false
         listPlayersScrollingFrame.Visible = false
 
-        titleLabel.BackgroundTransparency = 0.5
+        titleLabel.BackgroundTransparency = 0.7
     else
         navbarFrame.Visible = true
         listPlayersScrollingFrame.Visible = true
@@ -427,8 +429,9 @@ closeButton.Activated:Connect(function()
 
     -- notifikasi bahwa semuanya telah dihapus
     StarterGui:SetCore("SendNotification", {
-        Title = "Bye!",
-        Text = "See you soon!",
+        Icon = "rbxassetid://12941020168",
+        Title = "Teleport Script Closed",
+        Text = "Bye, see you soon!",
         Duration = 5
     })
 end)
