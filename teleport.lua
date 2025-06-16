@@ -43,7 +43,7 @@ partIndicator.Name = "ZamScriptTeleportPartIndicator"
 partIndicator.Shape = Enum.PartType.Ball
 partIndicator.Material = Enum.Material.Neon
 partIndicator.Size = Vector3.new(1, 1, 1)
-partIndicator.Color = Color3.fromRGB(255, 0, 0)
+partIndicator.Color = Color3.fromRGB(255, 0, 255)
 partIndicator.Anchored = true
 partIndicator.CanCollide = false
 partIndicator.CanTouch = false
@@ -66,15 +66,15 @@ local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-mainFrame.Size = UDim2.new(0.1, 100, 0.1, 200)
+mainFrame.Size = UDim2.new(0.1, 150, 0.1, 200)
 mainFrame.BackgroundTransparency = 1
 mainFrame.Parent = ScreenGui
 
 -- header untuk title, tombol minimize, dan tombol tutup sekaligus sebagai input dragging
 local headerFrame = Instance.new("Frame")
 headerFrame.Name = "HeaderFrame"
-headerFrame.Size = UDim2.new(1, 0, 0.15, 0)
-headerFrame.BackgroundTransparency = 1
+headerFrame.Size = UDim2.new(1, 0, 0.125, 0)
+headerFrame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 headerFrame.LayoutOrder = 1
 headerFrame.Active = true
 headerFrame.Parent = mainFrame
@@ -90,11 +90,11 @@ navbarFrame.Parent = mainFrame
 -- list untuk semua pemain yang ada di server
 local listPlayersScrollingFrame = Instance.new("ScrollingFrame")
 listPlayersScrollingFrame.Name = "ListPlayersScrollingFrame"
-listPlayersScrollingFrame.Size = UDim2.new(1, 0, 0.75, 0)
+listPlayersScrollingFrame.Size = UDim2.new(1, 0, 0.775, 0)
 listPlayersScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 listPlayersScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 listPlayersScrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
-listPlayersScrollingFrame.BackgroundColor3 = Color3.fromRGB(53, 53, 53)
+listPlayersScrollingFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 listPlayersScrollingFrame.ScrollBarThickness = 4
 listPlayersScrollingFrame.LayoutOrder = 3
 listPlayersScrollingFrame.Parent = mainFrame
@@ -102,9 +102,9 @@ listPlayersScrollingFrame.Parent = mainFrame
 -- title
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "TitleLabel"
-titleLabel.Size = UDim2.new(0.8, 0, 1, 0)
-titleLabel.BackgroundColor3 = Color3.fromRGB(84, 84, 84)
+titleLabel.Size = UDim2.new(1, 0, 1, 0)
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.BackgroundTransparency = 1
 titleLabel.Font = Enum.Font.SourceSans
 titleLabel.Text = "Teleport To Player"
 titleLabel.TextScaled = true
@@ -115,20 +115,20 @@ titleLabel.Parent = headerFrame
 -- tombol minimize untuk mengecilkan frame
 local minimizeButton = Instance.new("ImageButton")
 minimizeButton.Name = "MinimizeButton"
-minimizeButton.Size = UDim2.new(1, 0, 1, 0)
+minimizeButton.Size = UDim2.new(0.8, 0, 0.8, 0)
 minimizeButton.SizeConstraint = Enum.SizeConstraint.RelativeYY
 minimizeButton.Image = "rbxassetid://133258489499035"
-minimizeButton.BackgroundColor3 = Color3.fromRGB(84, 84, 84)
+minimizeButton.BackgroundTransparency = 1
 minimizeButton.LayoutOrder = 2
 minimizeButton.Parent = headerFrame
 
 -- tombol tutup untuk keluar
 local closeButton = Instance.new("ImageButton")
 closeButton.Name = "CloseButton"
-closeButton.Size = UDim2.new(1, 0, 1, 0)
+closeButton.Size = UDim2.new(0.8, 0, 0.8, 0)
 closeButton.SizeConstraint = Enum.SizeConstraint.RelativeYY
 closeButton.Image = "rbxassetid://92186614586776"
-closeButton.BackgroundColor3 = Color3.fromRGB(84, 84, 84)
+closeButton.BackgroundTransparency = 1
 closeButton.LayoutOrder = 3
 closeButton.Parent = headerFrame
 
@@ -136,12 +136,12 @@ closeButton.Parent = headerFrame
 local searchBar = Instance.new("TextBox")
 searchBar.Name = "SearchBar"
 searchBar.Size = UDim2.new(1, 0, 1, 0)
-searchBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+searchBar.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
 searchBar.TextColor3 = Color3.fromRGB(255, 255, 255)
-searchBar.PlaceholderColor3 = Color3.fromRGB(106, 106, 106)
+searchBar.PlaceholderColor3 = Color3.fromRGB(110, 110, 110)
 searchBar.Font = Enum.Font.SourceSans
 searchBar.Text = ""
-searchBar.PlaceholderText = "Search Player"
+searchBar.PlaceholderText = "🔎 Search Players"
 searchBar.TextScaled = true
 searchBar.TextWrapped = true
 searchBar.LayoutOrder = 1
@@ -153,7 +153,7 @@ cancelSearchButton.Name = "CancelSearchButton"
 cancelSearchButton.Size = UDim2.new(1, 0, 1, 0)
 cancelSearchButton.SizeConstraint = Enum.SizeConstraint.RelativeYY
 cancelSearchButton.Image = "rbxassetid://92186614586776"
-cancelSearchButton.BackgroundColor3 = Color3.fromRGB(84, 84, 84)
+cancelSearchButton.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
 cancelSearchButton.LayoutOrder = 2
 cancelSearchButton.Parent = navbarFrame
 
@@ -176,8 +176,10 @@ universalPadding.PaddingBottom = UDim.new(0, 2)
 
 universalPadding:Clone().Parent = titleLabel
 universalPadding:Clone().Parent = searchBar
-universalPadding:Clone().Parent = listPlayersScrollingFrame
 universalPadding:Clone().Parent = tpPlayerButton
+
+local listPlayersScrollingFramePadding = universalPadding:Clone()
+listPlayersScrollingFramePadding.Parent = listPlayersScrollingFrame
 
 -- layout
 local mainFrameLayout = Instance.new("UIListLayout")
@@ -189,6 +191,8 @@ local headerFrameLayout = Instance.new("UIListLayout")
 headerFrameLayout.SortOrder = Enum.SortOrder.LayoutOrder
 headerFrameLayout.FillDirection = Enum.FillDirection.Horizontal
 headerFrameLayout.HorizontalFlex = Enum.UIFlexAlignment.Fill
+headerFrameLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+headerFrameLayout.Padding = UDim.new(0, 2)
 headerFrameLayout.Parent = headerFrame
 
 local navbarFrameLayout = Instance.new("UIListLayout")
@@ -215,13 +219,13 @@ else
 end
 
 -- filter pencarian pemain
-local function matchPlayer(displayName, username)
+local function matchPlayer(displayName, name)
     local lowerKeyword = string.lower(searchBar.Text)
 
     return (
         not searchBar.Text or
         string.find(string.lower(displayName), lowerKeyword) or
-        string.find(string.lower(username), lowerKeyword)
+        string.find(string.lower(name), lowerKeyword)
     )
 end
 
@@ -234,21 +238,32 @@ local function updatePlayers()
         end
     end
 
+    -- menyimpan panjang isi list
+    local totalHeight = 0
+    local totalButton = 0
+
     -- mendapatkan semua pemain dalam server
     local listPlayers = Players:GetPlayers()
 
-    -- urutkan berdasarkan urutan ASCII (atau abjad) dari nama display pemain
+    -- urutkan berdasarkan urutan ASCII dari nama display pemain
     table.sort(listPlayers, function(a, b) return a.DisplayName < b.DisplayName end)
+
+    -- cek apakah ada setidaknya 1 pemain aktif (selain pemain utama)
+    if #listPlayers - 1 == 0 then
+        searchBar.PlaceholderText = "❌ No Players Found"
+    else
+        searchBar.PlaceholderText = "🔎 Search Players"
+    end
 
     for _, player in pairs(listPlayers) do
         local displayName = player.DisplayName
-        local username = player.Name
+        local name = player.Name
 
         -- mengecualikan pemain utama (LokalPlayer) dan mefilter pemain dari teks pencarian
-        if player ~= LocalPlayer and matchPlayer(displayName, username) then
+        if player ~= LocalPlayer and matchPlayer(displayName, name) then
             local button = tpPlayerButton:Clone()
 
-            button.Text = displayName .. " (@" .. username .. ")"
+            button.Text = displayName .. " (@" .. name .. ")"
             button.Parent = listPlayersScrollingFrame
 
             -- fungsi aksi ketika tombol di tekan maka teleport ke pemain target
@@ -267,7 +282,22 @@ local function updatePlayers()
                     end
                 end
             end)
+
+            totalButton = totalButton + 1
+            totalHeight = totalHeight + button.AbsoluteSize.Y
         end
+    end
+
+    totalHeight = totalHeight + listPlayersScrollingFrameLayout.Padding.Offset * (totalButton - 1)
+
+    -- jika total panjang list lebih besar dari ukuran layar maka aktifkan scroll bar dan padding menjadi 7
+    if totalHeight > listPlayersScrollingFrame.AbsoluteSize.Y then
+        listPlayersScrollingFrame.ScrollBarThickness = 5
+        listPlayersScrollingFramePadding.PaddingRight = UDim.new(0, 7)
+    -- jika tidak maka nonaktifkan scroll bar dan padding menjadi 2
+    else
+        listPlayersScrollingFrame.ScrollBarThickness = 0
+        listPlayersScrollingFramePadding.PaddingRight = UDim.new(0, 2)
     end
 end
 
@@ -402,12 +432,12 @@ minimizeButton.Activated:Connect(function()
         navbarFrame.Visible = false
         listPlayersScrollingFrame.Visible = false
 
-        titleLabel.BackgroundTransparency = 0.7
+        headerFrame.BackgroundTransparency = 0.75
     else
         navbarFrame.Visible = true
         listPlayersScrollingFrame.Visible = true
 
-        titleLabel.BackgroundTransparency = 0
+        headerFrame.BackgroundTransparency = 0
     end
 end)
 
